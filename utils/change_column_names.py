@@ -1,0 +1,133 @@
+import pandas as pd
+
+
+def changeToCode(data):
+
+    name_to_code = \
+        {
+            'Index': 'COLUMN01',
+            'StockCode': 'COLUMN02',
+            'TickTime': 'COLUMN03',
+            'OpeningPrice': 'COLUMN04',
+            'HighestPriceToTick': 'COLUMN05',
+            'LowestPriceToTick': 'COLUMN06',
+            'LatestTransactionPriceToTick': 'COLUMN07',
+            'SellingPrice1': 'COLUMN08',
+            'SellingPrice2': 'COLUMN09',
+            'SellingPrice3': 'COLUMN10',
+            'SellingPrice4': 'COLUMN11',
+            'SellingPrice5': 'COLUMN12',
+            'SellingPrice6': 'COLUMN13',
+            'SellingPrice7': 'COLUMN14',
+            'SellingPrice8': 'COLUMN15',
+            'SellingPrice9': 'COLUMN16',
+            'SellingPrice10': 'COLUMN17',
+            'SellingVolume1': 'COLUMN18',
+            'SellingVolume2': 'COLUMN19',
+            'SellingVolume3': 'COLUMN20',
+            'SellingVolume4': 'COLUMN21',
+            'SellingVolume5': 'COLUMN22',
+            'SellingVolume6': 'COLUMN23',
+            'SellingVolume7': 'COLUMN24',
+            'SellingVolume8': 'COLUMN25',
+            'SellingVolume9': 'COLUMN26',
+            'SellingVolume10': 'COLUMN27',
+            'BuyingPrice1': 'COLUMN28',
+            'BuyingPrice2': 'COLUMN29',
+            'BuyingPrice3': 'COLUMN30',
+            'BuyingPrice4': 'COLUMN31',
+            'BuyingPrice5': 'COLUMN32',
+            'BuyingPrice6': 'COLUMN33',
+            'BuyingPrice7': 'COLUMN34',
+            'BuyingPrice8': 'COLUMN35',
+            'BuyingPrice9': 'COLUMN36',
+            'BuyingPrice10': 'COLUMN37',
+            'BuyingVolume1': 'COLUMN38',
+            'BuyingVolume2': 'COLUMN39',
+            'BuyingVolume3': 'COLUMN40',
+            'BuyingVolume4': 'COLUMN41',
+            'BuyingVolume5': 'COLUMN42',
+            'BuyingVolume6': 'COLUMN43',
+            'BuyingVolume7': 'COLUMN44',
+            'BuyingVolume8': 'COLUMN45',
+            'BuyingVolume9': 'COLUMN46',
+            'BuyingVolume10': 'COLUMN47',
+            'CumulativeTransactionVolumeToTick': 'COLUMN48',
+            'CumulativeTransactionAmountToTick': 'COLUMN49',
+            'TotalCommissionedBuyingVolumeToTick': 'COLUMN50',
+            'TotalCommissionedSellingVolumeToTick': 'COLUMN51',
+            'LimitUpPrice': 'COLUMN52',
+            'LimitDownPrice': 'COLUMN53',
+            'WeightedAverageCommissionedBuyingPriceToTick': 'COLUMN54',
+            'WeightedAverageCommissionedSellingPriceToTick': 'COLUMN55'
+        }
+
+    data = data.rename(columns=name_to_code)
+
+    return data
+
+
+def changeToName(data):
+
+    code_to_name = \
+        {
+            'COLUMN01': 'Index',
+            'COLUMN02': 'StockCode',
+            'COLUMN03': 'TickTime',
+            'COLUMN04': 'OpeningPrice',
+            'COLUMN05': 'HighestPriceToTick',
+            'COLUMN06': 'LowestPriceToTick',
+            'COLUMN07': 'LatestTransactionPriceToTick',
+            'COLUMN08': 'SellingPrice1',
+            'COLUMN09': 'SellingPrice2',
+            'COLUMN10': 'SellingPrice3',
+            'COLUMN11': 'SellingPrice4',
+            'COLUMN12': 'SellingPrice5',
+            'COLUMN13': 'SellingPrice6',
+            'COLUMN14': 'SellingPrice7',
+            'COLUMN15': 'SellingPrice8',
+            'COLUMN16': 'SellingPrice9',
+            'COLUMN17': 'SellingPrice10',
+            'COLUMN18': 'SellingVolume1',
+            'COLUMN19': 'SellingVolume2',
+            'COLUMN20': 'SellingVolume3',
+            'COLUMN21': 'SellingVolume4',
+            'COLUMN22': 'SellingVolume5',
+            'COLUMN23': 'SellingVolume6',
+            'COLUMN24': 'SellingVolume7',
+            'COLUMN25': 'SellingVolume8',
+            'COLUMN26': 'SellingVolume9',
+            'COLUMN27': 'SellingVolume10',
+            'COLUMN28': 'BuyingPrice1',
+            'COLUMN29': 'BuyingPrice2',
+            'COLUMN30': 'BuyingPrice3',
+            'COLUMN31': 'BuyingPrice4',
+            'COLUMN32': 'BuyingPrice5',
+            'COLUMN33': 'BuyingPrice6',
+            'COLUMN34': 'BuyingPrice7',
+            'COLUMN35': 'BuyingPrice8',
+            'COLUMN36': 'BuyingPrice9',
+            'COLUMN37': 'BuyingPrice10',
+            'COLUMN38': 'BuyingVolume1',
+            'COLUMN39': 'BuyingVolume2',
+            'COLUMN40': 'BuyingVolume3',
+            'COLUMN41': 'BuyingVolume4',
+            'COLUMN42': 'BuyingVolume5',
+            'COLUMN43': 'BuyingVolume6',
+            'COLUMN44': 'BuyingVolume7',
+            'COLUMN45': 'BuyingVolume8',
+            'COLUMN46': 'BuyingVolume9',
+            'COLUMN47': 'BuyingVolume10',
+            'COLUMN48': 'CumulativeTransactionVolumeToTick',
+            'COLUMN49': 'CumulativeTransactionAmountToTick',
+            'COLUMN50': 'TotalCommissionedBuyingVolumeToTick',
+            'COLUMN51': 'TotalCommissionedSellingVolumeToTick',
+            'COLUMN52': 'LimitUpPrice',
+            'COLUMN53': 'LimitDownPrice',
+            'COLUMN54': 'WeightedAverageCommissionedBuyingPriceToTick',
+            'COLUMN55': 'WeightedAverageCommissionedSellingPriceToTick'
+        }
+
+    data = data.rename(columns=code_to_name)
+
+    return data
