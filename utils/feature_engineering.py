@@ -32,7 +32,7 @@ class WeightedAvgComPriceSpread(BaseEstimator, TransformerMixin):
     def transform(self, x, y=None):
         x = x.copy()
 
-        x['WeightedAvgComPriceSpread'] = x['WeightedAverageCommissionedSellingPriceToTick'] -\
+        x['WeightedAvgComPriceSpread'] = x['WeightedAverageCommissionedSellingPriceToTick'] - \
                                          x['WeightedAverageCommissionedBuyingPriceToTick']
 
         return x
