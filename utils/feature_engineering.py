@@ -143,3 +143,19 @@ class TransactionVolume(BaseEstimator, TransformerMixin):
         x['TransactionVolume'] = x['CumulativeTransactionVolumeToTick'] - x['TransactionVolume']
 
         return x
+
+class NDayRegression(BaseEstimator, TransformerMixin):
+
+    def __init(self, n = 5):
+        self.n = n
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, x, y=None):
+
+        colname = '{}DayRegression'.format(self.n)
+
+        return x
+
+        return x
