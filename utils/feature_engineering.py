@@ -161,23 +161,6 @@ class LocalMinima(BaseEstimator, TransformerMixin):
 
         return x
 
-class LocalMaxima(BaseEstimator, TransformerMixin):
-
-    def __init__(self, n=20):
-        self.n = n
-
-    def fit(self, x, y=None):
-        return self
-
-    def transform(self, x, y=None):
-
-        local_maxima = argrelextrema(x.values, np.greater_equal, order=self.n)[0]['LatestTransactionPriceToTick']
-        x['LocalMaxima'] = x.iloc[local_maxima]['LatestTransactionPriceToTick']
-
-        local_maxima_index = np.where(x['LocalMaxima'] > 0)[0]
-
-        return x
-
 class RollingTransPriceMeanDiff(BaseEstimator, TransformerMixin):
 
     def __init__(self):
