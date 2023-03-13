@@ -11,7 +11,7 @@ class LimitRatio(BaseEstimator, TransformerMixin):
 
     def fit(self, x, y=None):
         return self
-yyy
+
     def transform(self, x, y=None):
         x = x.copy()
 
@@ -120,7 +120,7 @@ class RollingTransPriceMean(BaseEstimator, TransformerMixin):
                                 .groupby('StockCode')['LatestTransactionPriceToTick'] \
                                 .rolling(self.window).mean()
         x = x.set_index(['StockCode', x.index])
-        x[rolling_trans_price] = se_rolling_trans_price
+        x['rolling_trans_price'] = se_rolling_trans_price
         x = x.reset_index()
 
         return x
