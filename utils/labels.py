@@ -13,3 +13,10 @@ class Direction(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, x, y = None):
+
+        if x > 0:
+            return 1
+        if x < 0:
+            return -1
+        else:
+            return 0
