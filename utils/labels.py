@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-#abcd
+
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -20,6 +20,3 @@ class Direction(BaseEstimator, TransformerMixin):
             return -1
         else:
             return 0
-
-
-        test test
