@@ -154,6 +154,8 @@ class LocalMinima(BaseEstimator, TransformerMixin):
 
     def transform(self, x, y=None):
 ## calculating local minima
+
+## Commit 2
         x['LocalMinima'] = x.iloc[argrelextrema(x.LatestTransactionPriceToTick.values, np.less_equal, order=self.n)[0]['LatestTransactionPriceToTick']]
 
         local_minima_index = np.where(x['LocalMinima'] > 0)[0]
