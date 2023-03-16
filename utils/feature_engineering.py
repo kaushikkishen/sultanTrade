@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from scipy.signal import argrelextrema
 
 class LimitRatio(BaseEstimator, TransformerMixin):
 
@@ -96,9 +95,10 @@ class RollingComPriceSpreadMean(BaseEstimator, TransformerMixin):
         se_rolling_com_price = x.sort_values(['TickTime']) \
                                 .groupby('StockCode')['WeightedAvgComPriceSpread'] \
                                 .rolling(self.window).mean()
+
         x = x.set_index(['StockCode', x.index])
         x[rolling_com_price] = se_rolling_com_price
-        x = x.reset_index()
+        x = x.reset_index(level='StockCode')
 
         return x
 
@@ -117,11 +117,12 @@ class RollingTransPriceMean(BaseEstimator, TransformerMixin):
         rolling_trans_price = 'RollingTransPriceMean' + str(self.window)
 
         se_rolling_trans_price = x.sort_values(['TickTime']) \
-                                .groupby('StockCode')['LatestTransactionPriceToTick'] \
-                                .rolling(self.window).mean()
+                                  .groupby('StockCode')['LatestTransactionPriceToTick'] \
+                                  .rolling(self.window).mean()
+
         x = x.set_index(['StockCode', x.index])
-        x['rolling_trans_price'] = se_rolling_trans_price
-        x = x.reset_index()
+        x[rolling_trans_price] = se_rolling_trans_price
+        x = x.reset_index(level='StockCode')
 
         return x
 
@@ -144,28 +145,11 @@ class TransactionVolume(BaseEstimator, TransformerMixin):
 
         return x
 
-class LocalMinima(BaseEstimator, TransformerMixin):
-
-    def __init__(self, n=20):
-        self.n = n
-
-    def fit(self, x, y=None):
-        return self
-
-    def transform(self, x, y=None):
-## calculating local minima
-
-## Commit 2
-        x['LocalMinima'] = x.iloc[argrelextrema(x.LatestTransactionPriceToTick.values, np.less_equal, order=self.n)[0]['LatestTransactionPriceToTick']]
-
-        local_minima_index = np.where(x['LocalMinima'] > 0)[0]
-
-        return x
 
 class RollingTransPriceMeanDiff(BaseEstimator, TransformerMixin):
 
-    def __init__(self):
-        pass
+    def __init__(self, window=5):
+        self.window = window
 
     def fit(self, x, y=None):
         return self
@@ -173,15 +157,17 @@ class RollingTransPriceMeanDiff(BaseEstimator, TransformerMixin):
     def transform(self, x, y=None):
         x = x.copy()
 
-        x['RollingTransPriceMeanDiff'] = x[]
-
+        rolling_trans_price = 'RollingTransPriceMean' + str(self.window)
+        rolling_trans_price_diff = 'RollingTransPriceMeanDiff' + str(self.window)
+        x[rolling_trans_price_diff] = x[rolling_trans_price] - x['LatestTransactionPriceToTick']
 
         return x
+
 
 class RollingComPriceSpreadMeanDiff(BaseEstimator, TransformerMixin):
 
-    def __init__(self):
-        pass
+    def __init__(self, window=5):
+        self.window = window
 
     def fit(self, x, y=None):
         return self
@@ -189,10 +175,12 @@ class RollingComPriceSpreadMeanDiff(BaseEstimator, TransformerMixin):
     def transform(self, x, y=None):
         x = x.copy()
 
-        x['RollingComPriceSpreadMeanDiff'] = x[]
-
+        rolling_com_price = 'RollingComPriceSpreadMean' + str(self.window)
+        rolling_com_price_diff = 'RollingComPriceSpreadMeanDiff' + str(self.window)
+        x[rolling_com_price_diff] = x[rolling_com_price] - x['WeightedAvgComPriceSpread']
 
         return x
+
 
 class NDayRegression(BaseEstimator, TransformerMixin):
 
