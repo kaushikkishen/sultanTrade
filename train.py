@@ -2,9 +2,15 @@ import numpy as np
 import pandas as pd
 import os
 import argparse
+import pickle
 
 from utils.change_column_names import changeToName
-from utils.feature_engineering import LimitRatio, Spread
+from utils.feature_engineering import *
+from utils.labels import *
+from utils.data_loader import train_files, test_files, all_files
+from utils.pipelines import transformation_pipeline
+
+from sklearn.ensemble import RandomForestClassifier
 
 
 def main():
@@ -16,24 +22,27 @@ def main():
 
     args = parser.parse_args()
 
-    filename = 'tickdata_20221020.csv'
-    outfile = 'tickdata_20221020_trial.csv'
+    for file in train_files:
 
-    file_path = os.path.join(args.data_url) #file_name
-    outfile_path = os.path.join(args.train_url, outfile)
+        file_path = os.path.join(args.data_url, file)
+        this_data = pd.read_csv(file_path)
+        this_data = changeToName(this_data)
+        this_data = transformation_pipeline.transform(this_data)
 
-    print(os.getcwd())
+        if train_files.index(file) == 0:
+            all_data = this_data
+        else:
+            all_data = pd.concat([all_data, this_data])
 
-    data = pd.read_csv(file_path)
+    X = all_data.drop('Label', axis=1)
+    y = all_data['Label']
 
-    data = changeToName(data)
-    lr = LimitRatio()
-    sp = Spread()
+    model = RandomForestClassifier()
 
-    data = lr.fit_transform(data)
-    data = sp.fit_transform(data)
+    model.fit(X, y)
 
-    data.to_csv(outfile_path, index = False)
+    with open(os.path.join(args.train_url, 'model.pkl'), 'wb') as f:
+        pickle.dump(model, f)
 
 
 if __name__ == '__main__':
