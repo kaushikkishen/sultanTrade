@@ -190,10 +190,36 @@ class NDayRegression(BaseEstimator, TransformerMixin):
     def fit(self, x, y=None):
         return self
 
+    def n_day_regression(self, df):
+        """
+        n day regression.
+        """
+        n = self.n
+        idxs = df.index.to_numpy()
+        # Create a new column in the dataframe to store the regression values
+        _varname_ = f'{n}_reg'
+        df[_varname_] = np.nan
+
+        # Loop through the stock codes and calculate the regression for each one
+        for idx in idxs:
+            if idx > n:
+                # Extract the target variable (y) and predictor variable (x)
+                y = df['LatestTransactionPriceToTick'][idx - n: idx].to_numpy()
+                x = np.arange(0, n).reshape(-1, 1)
+
+                # Fit a linear regression model to the data
+                model = LinearRegression().fit(x, y.reshape(-1, 1))
+
+                # Store the regression coefficient in the dataframe
+                df.loc[idx, _varname_] = model.coef_[0][0]
+
+        return df
+
     def transform(self, x, y=None):
+        x = x.copy()
 
-        colname = '{}DayRegression'.format(self.n)
-
-        return x
+        x = x.sort_values(['TickTime']) \
+            .groupby('StockCode') \
+            .apply(lambda x: self.n_day_regression(x))
 
         return x
