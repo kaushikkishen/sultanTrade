@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.linear_model import LinearRegression
 
 class LimitRatio(BaseEstimator, TransformerMixin):
 
@@ -184,7 +185,7 @@ class RollingComPriceSpreadMeanDiff(BaseEstimator, TransformerMixin):
 
 class NDayRegression(BaseEstimator, TransformerMixin):
 
-    def __init(self, n = 5):
+    def __init__(self, n=5):
         self.n = n
 
     def fit(self, x, y=None):
@@ -194,25 +195,26 @@ class NDayRegression(BaseEstimator, TransformerMixin):
         """
         n day regression.
         """
-        n = self.n
+
+        df = df.reset_index()
         idxs = df.index.to_numpy()
         # Create a new column in the dataframe to store the regression values
-        _varname_ = f'{n}_reg'
+        _varname_ = f'{self.n}_reg'
         df[_varname_] = np.nan
 
         # Loop through the stock codes and calculate the regression for each one
         for idx in idxs:
-            if idx > n:
+            if idx > self.n-1:
                 # Extract the target variable (y) and predictor variable (x)
-                y = df['LatestTransactionPriceToTick'][idx - n: idx].to_numpy()
-                x = np.arange(0, n).reshape(-1, 1)
+                y = df['LatestTransactionPriceToTick'][idx - self.n + 1: idx + 1].to_numpy()
+                x = np.arange(0, self.n).reshape(-1, 1)
 
                 # Fit a linear regression model to the data
                 model = LinearRegression().fit(x, y.reshape(-1, 1))
 
                 # Store the regression coefficient in the dataframe
                 df.loc[idx, _varname_] = model.coef_[0][0]
-
+        df = df.set_index('index')
         return df
 
     def transform(self, x, y=None):
@@ -220,6 +222,6 @@ class NDayRegression(BaseEstimator, TransformerMixin):
 
         x = x.sort_values(['TickTime']) \
             .groupby('StockCode') \
-            .apply(lambda x: self.n_day_regression(x))
+            .apply(lambda l: self.n_day_regression(l))
 
         return x
