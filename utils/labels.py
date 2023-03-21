@@ -44,18 +44,18 @@ class LocalMinima(BaseEstimator, TransformerMixin):
         n = 20
         df_stock = df[df['StockCode'] == stockunique[0]]
         df_stocka = df_stock.sort_values('TickTime', ascending=True)
-        df_stocka['LocalMinima'] = \
+        df_stocka['Label'] = \
         df_stocka.iloc[argrelextrema(df_stocka.LatestTransactionPriceToTick.values, np.less_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
 
         for i in range(1, len(stockunique)):
             stock_code = stockunique[i]
             df_stock = df[df['StockCode'] == stock_code]
             df_stockb = df_stock.sort_values('TickTime', ascending=True)
-            df_stockb['LocalMinima'] = \
+            df_stockb['Label'] = \
             df_stockb.iloc[argrelextrema(df_stockb.LatestTransactionPriceToTick.values, np.less_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
             df_stocka = pd.concat([df_stocka, df_stockb], axis=0)
 
-
+        df_stocka['Label'] = np.where(df_stocka['Label'] > 0, 1, 0)
         return df_stocka
 
 
@@ -74,15 +74,19 @@ class LocalMaxima(BaseEstimator, TransformerMixin):
         n = 20
         df_stock = df[df['StockCode'] == stockunique[0]]
         df_stocka = df_stock.sort_values('TickTime', ascending=True)
-        df_stocka['LocalMinima'] = \
-        df_stocka.iloc[argrelextrema(df_stocka.LatestTransactionPriceToTick.values, np.greater_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
+        df_stocka['Label'] = \
+        df_stocka.iloc[argrelextrema(df_stocka.LatestTransactionPriceToTick.values,
+                                     np.greater_equal,
+                                     order=self.n)[0]]['LatestTransactionPriceToTick']
 
         for i in range(1, len(stockunique)):
             stock_code = stockunique[i]
             df_stock = df[df['StockCode'] == stock_code]
             df_stockb = df_stock.sort_values('TickTime', ascending=True)
-            df_stockb['LocalMaxiima'] = \
-            df_stockb.iloc[argrelextrema(df_stockb.LatestTransactionPriceToTick.values, np.greater_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
+            df_stockb['Label'] = \
+            df_stockb.iloc[argrelextrema(df_stockb.LatestTransactionPriceToTick.values,
+                                         np.greater_equal,
+                                         order=self.n)[0]]['LatestTransactionPriceToTick']
             df_stocka = pd.concat([df_stocka, df_stockb], axis=0)
 
 
