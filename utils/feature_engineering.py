@@ -182,6 +182,8 @@ class RollingComPriceSpreadMeanDiff(BaseEstimator, TransformerMixin):
 
         return x
 
+from statsmodels.regression.rolling import RollingOLS
+import statsmodels.api as sm
 
 class NDayRegression(BaseEstimator, TransformerMixin):
 
@@ -191,32 +193,26 @@ class NDayRegression(BaseEstimator, TransformerMixin):
     def fit(self, x, y=None):
         return self
 
-    def n_day_regression(self, df):
+    def RollingOLSRegression(self, df):
         """
-        n day regression.
+        performs rolling OLS given x and y. outputs regression coefficient
         """
 
         df = df.reset_index()
-        idxs = df.index.to_numpy()
+        idx = df.index.to_numpy()
         # Create a new column in the dataframe to store the regression values
         _varname_ = f'{self.n}_reg'
         df[_varname_] = np.nan
 
-        # Loop through the stock codes and calculate the regression for each one
-        for idx in idxs:
-            if idx > self.n-1:
-                # Extract the target variable (y) and predictor variable (x)
-                y = df['LatestTransactionPriceToTick'][idx - self.n + 1: idx + 1].to_numpy()
-                x = np.arange(0, self.n).reshape(-1, 1)
+        y = x['LatestTransactionPriceToTick']
+        x = x.index
+        X = sm.add_constant(x)
+        model = RollingOLS(y, X, window=self.n, min_nobs=5)
+        rolling_reg = model.fit()
 
-                # Fit rolling OLS to the data
-                X = sm.add_constant(x)
-                model = sm.OLS(y, X)
-                rolling_model = model.fit_regularized(alpha=0.1, L1_wt=0.1, start_params=None, profile_scale=False,
-                                                      refit=False)
+        # Store the OLS coefficient in the dataframe
+        df.loc[idx, _varname_] = rolling_reg.params['Index']
 
-                # Store the OLS coefficient in the dataframe
-                df.loc[idx, _varname_] = rolling_model.params[1]
         df = df.set_index('index')
         return df
 
@@ -225,6 +221,6 @@ class NDayRegression(BaseEstimator, TransformerMixin):
 
         x = x.sort_values(['TickTime']) \
             .groupby('StockCode') \
-            .apply(lambda l: self.n_day_regression(l))
+            .apply(lambda l: self.RollingOLSRegression(l))
 
         return x
