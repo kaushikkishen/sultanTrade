@@ -209,11 +209,14 @@ class NDayRegression(BaseEstimator, TransformerMixin):
                 y = df['LatestTransactionPriceToTick'][idx - self.n + 1: idx + 1].to_numpy()
                 x = np.arange(0, self.n).reshape(-1, 1)
 
-                # Fit a linear regression model to the data
-                model = LinearRegression().fit(x, y.reshape(-1, 1))
+                # Fit rolling OLS to the data
+                X = sm.add_constant(x)
+                model = sm.OLS(y, X)
+                rolling_model = model.fit_regularized(alpha=0.1, L1_wt=0.1, start_params=None, profile_scale=False,
+                                                      refit=False)
 
-                # Store the regression coefficient in the dataframe
-                df.loc[idx, _varname_] = model.coef_[0][0]
+                # Store the OLS coefficient in the dataframe
+                df.loc[idx, _varname_] = rolling_model.params[1]
         df = df.set_index('index')
         return df
 
