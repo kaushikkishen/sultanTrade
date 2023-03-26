@@ -200,18 +200,19 @@ class NDayRegression(BaseEstimator, TransformerMixin):
 
         df = df.reset_index()
         idx = df.index.to_numpy()
+
         # Create a new column in the dataframe to store the regression values
         _varname_ = f'{self.n}_reg'
         df[_varname_] = np.nan
 
-        y = x['LatestTransactionPriceToTick']
-        x = x.index
-        X = sm.add_constant(x)
-        model = RollingOLS(y, X, window=self.n, min_nobs=5)
+        # fit OLS model
+        y = df['LatestTransactionPriceToTick']
+        x = sm.add_constant(df.index)
+        model = RollingOLS(y, x, window=self.n, min_nobs=5)
         rolling_reg = model.fit()
 
         # Store the OLS coefficient in the dataframe
-        df.loc[idx, _varname_] = rolling_reg.params['Index']
+        df.loc[idx, _varname_] = rolling_reg.params['x1']
 
         df = df.set_index('index')
         return df
