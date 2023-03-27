@@ -31,31 +31,34 @@ class LocalMinima(BaseEstimator, TransformerMixin):
     def fit(self, x, y=None):
         return self
 
-    def transform(self, x, y=None):
+    def find_local_minima(self, x, n):
+        loc_min = x.iloc[argrelextrema(x.LatestTransactionPriceToTick.values, np.less_equal, order=n)[0]][
+            'LatestTransactionPriceToTick']
+        x['LocalMinima'] = loc_min
+        return x
 
-        # x = x.copy()
-        # local_minima = argrelextrema(x.values, np.less_equal, order=self.n)[0]['LatestTransactionPriceToTick']
-        # x['LocalMinima'] = x.iloc[local_minima]['LatestTransactionPriceToTick']
-        #
-        # local_minima_index = np.where(x['LocalMinima'] > 0)[0]
+    def transform(self, x, y=None):
+        # df = x.copy()
+        # stockunique = df.StockCode.unique()
+        # df_stock = df[df['StockCode'] == stockunique[0]]
+        # df_stocka = df_stock.sort_values('TickTime', ascending=True)
+        # df_stocka['LocalMinima'] = \
+        # df_stocka.iloc[argrelextrema(df_stocka.LatestTransactionPriceToTick.values, np.less_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
+
+        # for i in range(1, len(stockunique)):
+        #     stock_code = stockunique[i]
+        #     df_stock = df[df['StockCode'] == stock_code]
+        #     df_stockb = df_stock.sort_values('TickTime', ascending=True)
+        #     df_stockb['LocalMinima'] = \
+        #     df_stockb.iloc[argrelextrema(df_stockb.LatestTransactionPriceToTick.values, np.less_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
+
+        #     df_stocka = pd.concat([df_stocka, df_stockb], axis=0)
 
         df = x.copy()
-        stockunique = df.StockCode.unique()
-        n = 20
-        df_stock = df[df['StockCode'] == stockunique[0]]
-        df_stocka = df_stock.sort_values('TickTime', ascending=True)
-        df_stocka['Label'] = \
-        df_stocka.iloc[argrelextrema(df_stocka.LatestTransactionPriceToTick.values, np.less_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
+        df_stocka = df.groupby('StockCode').apply(
+            lambda x: self.find_local_minima(x.sort_values('TickTime', ascending=True), self.n))
+        df_stocka = df_stocka.reset_index(drop=True)
 
-        for i in range(1, len(stockunique)):
-            stock_code = stockunique[i]
-            df_stock = df[df['StockCode'] == stock_code]
-            df_stockb = df_stock.sort_values('TickTime', ascending=True)
-            df_stockb['Label'] = \
-            df_stockb.iloc[argrelextrema(df_stockb.LatestTransactionPriceToTick.values, np.less_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
-            df_stocka = pd.concat([df_stocka, df_stockb], axis=0)
-
-        df_stocka['Label'] = np.where(df_stocka['Label'] > 0, 1, 0)
         return df_stocka
 
 
@@ -67,27 +70,32 @@ class LocalMaxima(BaseEstimator, TransformerMixin):
     def fit(self, x, y=None):
         return self
 
+    def find_local_maxima(self,x, n):
+        loc_min = x.iloc[argrelextrema(x.LatestTransactionPriceToTick.values, np.greater_equal, order=n)[0]]['LatestTransactionPriceToTick']
+        x['LocalMaxima'] = loc_min
+        return x
+
     def transform(self, x, y=None):
 
-        df = x.copy()
-        stockunique = df.StockCode.unique()
-        n = 20
-        df_stock = df[df['StockCode'] == stockunique[0]]
-        df_stocka = df_stock.sort_values('TickTime', ascending=True)
-        df_stocka['Label'] = \
-        df_stocka.iloc[argrelextrema(df_stocka.LatestTransactionPriceToTick.values,
-                                     np.greater_equal,
-                                     order=self.n)[0]]['LatestTransactionPriceToTick']
+        # df = x.copy()
+        # stockunique = df.StockCode.unique()
+        # df_stock = df[df['StockCode'] == stockunique[0]]
+        # df_stocka = df_stock.sort_values('TickTime', ascending=True)
+        # df_stocka['LocalMaxima'] = \
+        # df_stocka.iloc[argrelextrema(df_stocka.LatestTransactionPriceToTick.values, np.greater_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
 
-        for i in range(1, len(stockunique)):
-            stock_code = stockunique[i]
-            df_stock = df[df['StockCode'] == stock_code]
-            df_stockb = df_stock.sort_values('TickTime', ascending=True)
-            df_stockb['Label'] = \
-            df_stockb.iloc[argrelextrema(df_stockb.LatestTransactionPriceToTick.values,
-                                         np.greater_equal,
-                                         order=self.n)[0]]['LatestTransactionPriceToTick']
-            df_stocka = pd.concat([df_stocka, df_stockb], axis=0)
+        # for i in range(1, len(stockunique)):
+        #     stock_code = stockunique[i]
+        #     df_stock = df[df['StockCode'] == stock_code]
+        #     df_stockb = df_stock.sort_values('TickTime', ascending=True)
+        #     df_stockb['LocalMinima'] = \
+        #     df_stockb.iloc[argrelextrema(df_stockb.LatestTransactionPriceToTick.values, np.greater_equal, order=self.n)[0]]['LatestTransactionPriceToTick']
+
+        #     df_stocka = pd.concat([df_stocka, df_stockb], axis=0)
+
+        df = x.copy()
+        df_stocka = df.groupby('StockCode').apply(lambda x: self.find_local_maxima(x.sort_values('TickTime', ascending=True), self.n))
+        df_stocka = df_stocka.reset_index(drop=True)
 
 
         return df_stocka
