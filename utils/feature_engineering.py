@@ -145,6 +145,7 @@ class TransactionVolume(BaseEstimator, TransformerMixin):
                                   .shift(1).fillna(0)
 
         x['TransactionVolume'] = x['CumulativeTransactionVolumeToTick'] - x['TransactionVolume']
+        x = x.reset_index(level='StockCode')
 
         return x
 
@@ -223,5 +224,6 @@ class NDayRegression(BaseEstimator, TransformerMixin):
         x = x.sort_values(['TickTime']) \
             .groupby('StockCode') \
             .apply(lambda l: self.RollingOLSRegression(l))
+        x = x.reset_index(level='StockCode')
 
         return x
