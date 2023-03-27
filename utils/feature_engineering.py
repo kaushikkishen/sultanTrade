@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.linear_model import LinearRegression
+from statsmodels.regression.rolling import RollingOLS
+import statsmodels.api as sm
+
 
 class LimitRatio(BaseEstimator, TransformerMixin):
 
@@ -182,8 +184,6 @@ class RollingComPriceSpreadMeanDiff(BaseEstimator, TransformerMixin):
 
         return x
 
-from statsmodels.regression.rolling import RollingOLS
-import statsmodels.api as sm
 
 class NDayRegression(BaseEstimator, TransformerMixin):
 
@@ -202,7 +202,7 @@ class NDayRegression(BaseEstimator, TransformerMixin):
         idx = df.index.to_numpy()
 
         # Create a new column in the dataframe to store the regression values
-        _varname_ = f'{self.n}_reg'
+        _varname_ = f'{self.n}DayReg'
         df[_varname_] = np.nan
 
         # fit OLS model

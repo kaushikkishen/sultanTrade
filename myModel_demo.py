@@ -6,11 +6,11 @@ import pandas as pd
 
 input_path = sys.argv[1]
 output_path = sys.argv[2]
-symbol_file = './demos/SampleStocks.csv'
+symbol_file = input_path.split('/')[-1]
 
 tick_data = open(input_path, 'r')
 order_time = open(output_path, 'w')
-symbol = pd.read_csv(symbol_file, index_col=None)['Code'].to_list()
+symbol = pd.read_csv(symbol_file, index_col=None)['COLUMN02'].to_list()
 idx_dict = dict(zip(symbol, list(range(len(symbol)))))
 
 # ---------- Initialization ----------

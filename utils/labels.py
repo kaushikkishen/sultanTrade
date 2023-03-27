@@ -32,9 +32,10 @@ class LocalMinima(BaseEstimator, TransformerMixin):
         return self
 
     def find_local_minima(self, x, n):
+
         loc_min = x.iloc[argrelextrema(x.LatestTransactionPriceToTick.values, np.less_equal, order=n)[0]][
             'LatestTransactionPriceToTick']
-        x['LocalMinima'] = loc_min
+        x['Label'] = loc_min
         return x
 
     def transform(self, x, y=None):
@@ -55,11 +56,13 @@ class LocalMinima(BaseEstimator, TransformerMixin):
         #     df_stocka = pd.concat([df_stocka, df_stockb], axis=0)
 
         df = x.copy()
-        df_stocka = df.groupby('StockCode').apply(
-            lambda x: self.find_local_minima(x.sort_values('TickTime', ascending=True), self.n))
-        df_stocka = df_stocka.reset_index(drop=True)
+        df = df.groupby('StockCode').apply(
+            lambda l: self.find_local_minima(l.sort_values('TickTime', ascending=True), self.n))
 
-        return df_stocka
+        df['Label'] = np.where(df['Label'] > 0, 1, 0)
+        df = df.reset_index(drop=True)
+
+        return df
 
 
 class LocalMaxima(BaseEstimator, TransformerMixin):

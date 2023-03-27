@@ -14,8 +14,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 
+import xgboost as xgb
 
 def main():
+
+    print(os.getcwd())
     parser = argparse.ArgumentParser(description='Test Run')
     parser.add_argument('--data_url', type=str, default=False,
                         help='mnist dataset path')
@@ -30,6 +33,7 @@ def main():
         this_data = pd.read_csv(file_path)
         this_data = changeToName(this_data)
         this_data = transformation_pipeline.fit_transform(this_data)
+        this_data.to_csv(os.path.join(args.train_url, 'transformed', file))
 
         if train_files.index(file) == 0:
             all_data = this_data
@@ -41,7 +45,7 @@ def main():
 
     model = Pipeline(steps=[
         ('OneHotEncode', OneHotEncoder()),
-        ('Classifier', RandomForestClassifier())
+        ('Classifier', xgb.XGBClassifier())
         ])
 
     model.fit(X, y)
