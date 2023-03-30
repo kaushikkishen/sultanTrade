@@ -38,5 +38,5 @@ tick_data = tick_data[['Index', 'StockCode', 'TickTime', 'LatestTransactionPrice
                        'RollingTransPriceMeanDiff5', 'RollingTransPriceMeanDiff100', 'Label']]
 order_tick = Strategy().fit_transform(tick_data)
 
-order_tick.to_csv(output_path, index = False)
+order_tick.to_csv(output_path, index=False)
 

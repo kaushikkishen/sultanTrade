@@ -7,9 +7,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 class Strategy(BaseEstimator, TransformerMixin):
 
     def __init__(self, shares_bought=0, shares_sold=0, balance=0, avg_price_holding_shares=0, shares=0,
-                 rolling_mean_100_thres=4500,
-                 rolling_mean_5_thres=500, stop_loss_limit=0.99, profit_limit=1.005, cut_off_time=144500000,
-                 cut_off_timeb=145500000):
+                 rolling_mean_100_thres=50,
+                 rolling_mean_5_thres=0.0012, stop_loss_limit=0.97, profit_limit=1.005, cut_off_time=143000000,
+                 cut_off_timeb=145000000):
 
         self.shares_bought = shares_bought
         self.shares_sold = shares_sold
@@ -53,95 +53,83 @@ class Strategy(BaseEstimator, TransformerMixin):
             buy_sell_flag = None
             # 'Index','StockCode','TickTime','LatestTransactionPriceToTick', 'RollingTransPriceMeanDiff5', 'RollingTransPriceMeanDiff100','Label'
             # Check if we can buy 40, 30, 30 shares
-            if buy_sell_flag == None and shares_bought == 0 and row[
-                'RollingTransPriceMeanDiff5'] > rolling_mean_5_thres and row[
+            if buy_sell_flag == None and shares_bought < 100 and row[
+                'RollingTransPriceMeanDiff5'] > rolling_mean_5_thres * row['LatestTransactionPriceToTick'] and row[
                 'RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
 
-                balance -= 40 * row['LatestTransactionPriceToTick']
+                balance -= 10 * row['LatestTransactionPriceToTick']
                 avg_price_holding_shares = row['LatestTransactionPriceToTick']
-                shares_bought += 40
-                shares += 40
+                shares_bought += 10
+                shares += 10
                 buy_sell_flag = 'B'
                 BSflag = 'B'
-                volume = 40
+                volume = 10
 
-            elif buy_sell_flag == None and shares_bought <= 40 and row[
-                'RollingTransPriceMeanDiff5'] > rolling_mean_5_thres and row[
-                'RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
-                balance -= 30 * row['LatestTransactionPriceToTick']
-                avg_price_holding_shares = (avg_price_holding_shares * shares + 30 * row[
-                    'LatestTransactionPriceToTick']) / (shares + 30)
-                shares_bought += 30
-                shares += 30
-                buy_sell_flag = 'B'
-                BSflag = 'B'
-                volume = 30
+            # elif buy_sell_flag == None and shares_bought <= 40 and row['RollingTransPriceMeanDiff5'] > rolling_mean_5_thres and row['RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
+            #     balance -= 30 * row['LatestTransactionPriceToTick']
+            #     avg_price_holding_shares = (avg_price_holding_shares * shares + 30 * row['LatestTransactionPriceToTick']) / (shares + 30)
+            #     shares_bought += 30
+            #     shares += 30
+            #     buy_sell_flag = 'B'
+            #     BSflag= 'B'
+            #     volume = 30
 
-            elif buy_sell_flag == None and shares_bought <= 70 and row[
-                'RollingTransPriceMeanDiff5'] > rolling_mean_5_thres and row[
-                'RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
-                balance -= 30 * row['LatestTransactionPriceToTick']
-                avg_price_holding_shares = (avg_price_holding_shares * shares + 30 * row[
-                    'LatestTransactionPriceToTick']) / (shares + 30)
-                shares_bought += 30
-                shares += 30
-                buy_sell_flag = 'B'
-                BSflag = 'B'
-                volume = 30
+            # elif buy_sell_flag == None and shares_bought <= 70 and row['RollingTransPriceMeanDiff5'] > rolling_mean_5_thres and row['RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
+            #     balance -= 30 * row['LatestTransactionPriceToTick']
+            #     avg_price_holding_shares = (avg_price_holding_shares * shares + 30 * row['LatestTransactionPriceToTick']) / (shares + 30)
+            #     shares_bought += 30
+            #     shares += 30
+            #     buy_sell_flag = 'B'
+            #     BSflag= 'B'
+            #     volume = 30
 
-            elif buy_sell_flag == None and shares_bought >= 40 and shares_sold == 0 and (
+            elif buy_sell_flag == None and shares_sold < 100 and shares_bought > 0 and shares_bought > shares_sold and (
                     row['LatestTransactionPriceToTick'] >= profit_limit * avg_price_holding_shares or row[
                 'LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares):
-                if shares - 40 == 0:
+                if shares - 10 == 0:
                     avg_price_holding_shares = 0
                 else:
-                    avg_price_holding_shares = (avg_price_holding_shares * shares - 40 * row[
-                        'LatestTransactionPriceToTick']) / (shares - 40)
-                shares_sold += 40
-                shares -= 40
-                balance += 40 * row['LatestTransactionPriceToTick']  ## no need to code
+                    avg_price_holding_shares = (avg_price_holding_shares * shares - 10 * row[
+                        'LatestTransactionPriceToTick']) / (shares - 10)
+                shares_sold += 10
+                shares -= 10
+                balance += 10 * row['LatestTransactionPriceToTick']  ## no need to code
                 buy_sell_flag = 'S'
                 BSflag = 'S'
-                volume = 40
+                volume = 10
 
-            elif buy_sell_flag == None and shares_sold <= 40 and shares_bought >= 70 and (
-                    row['LatestTransactionPriceToTick'] >= profit_limit * avg_price_holding_shares or row[
-                'LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares):
-                if shares - 30 == 0:
-                    avg_price_holding_shares = 0
-                else:
-                    avg_price_holding_shares = (avg_price_holding_shares * shares - 30 * row[
-                        'LatestTransactionPriceToTick']) / (shares - 30)
-                shares_sold += 30
-                shares -= 30
-                balance += 30 * row['LatestTransactionPriceToTick']
-                buy_sell_flag = 'S'
-                BSflag = 'S'
-                volume = 30
+            # elif buy_sell_flag == None and shares_sold <= 40 and shares_bought >= 70 and (row['LatestTransactionPriceToTick'] >= profit_limit * avg_price_holding_shares or row['LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares):
+            #     if shares - 30 == 0:
+            #         avg_price_holding_shares = 0
+            #     else:
+            #         avg_price_holding_shares = (avg_price_holding_shares * shares - 30 * row['LatestTransactionPriceToTick']) / (shares - 30)
+            #     shares_sold += 30
+            #     shares -= 30
+            #     balance += 30 * row['LatestTransactionPriceToTick']
+            #     buy_sell_flag = 'S'
+            #     BSflag= 'S'
+            #     volume = 30
 
-            elif buy_sell_flag == None and shares_sold <= 70 and shares_bought == 100 and (
-                    row['LatestTransactionPriceToTick'] >= profit_limit * avg_price_holding_shares or row[
-                'LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares):
-                if shares - 30 == 0:
-                    avg_price_holding_shares = 0
-                else:
-                    avg_price_holding_shares = (avg_price_holding_shares * shares - 30 * row[
-                        'LatestTransactionPriceToTick']) / (shares - 30)
-                shares_sold += 30
-                shares -= 30
-                balance += 30 * row['LatestTransactionPriceToTick']
-                buy_sell_flag = 'S'
-                BSflag = 'S'
-                volume = 30
+            # elif buy_sell_flag == None and shares_sold <= 70 and shares_bought == 100 and (row['LatestTransactionPriceToTick'] >= profit_limit * avg_price_holding_shares or row['LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares):
+            #     if shares - 30 == 0:
+            #         avg_price_holding_shares = 0
+            #     else:
+            #         avg_price_holding_shares = (avg_price_holding_shares * shares - 30 * row['LatestTransactionPriceToTick']) / (shares - 30)
+            #     shares_sold += 30
+            #     shares -= 30
+            #     balance += 30 * row['LatestTransactionPriceToTick']
+            #     buy_sell_flag = 'S'
+            #     BSflag= 'S'
+            #     volume = 30
 
             # for dumping stocks to meet transaction rules after a certain cut-off time
             elif buy_sell_flag == None and row['TickTime'] > cut_off_time and shares_bought < 100:
-                balance += (100 - shares_bought) * row['LatestTransactionPriceToTick']
-                avg_price_holding_shares = (avg_price_holding_shares * shares + (100 - shares_bought) * row[
-                    'LatestTransactionPriceToTick']) / (shares + (100 - shares_bought))
-                shares += (100 - shares_bought)
-                volume = 100 - shares_bought
-                shares_bought = 100
+                balance -= 10 * row['LatestTransactionPriceToTick']
+                avg_price_holding_shares = (avg_price_holding_shares * shares + 10 * row[
+                    'LatestTransactionPriceToTick']) / (shares + 10)
+                shares += 10
+                volume = 10
+                shares_bought += 10
                 buy_sell_flag = 'B'
                 BSflag = 'B'
 
@@ -149,29 +137,29 @@ class Strategy(BaseEstimator, TransformerMixin):
             elif buy_sell_flag == None and row[
                 'TickTime'] > cut_off_time and shares_bought == 100 and shares_sold < 100 and avg_price_holding_shares < \
                     row['LatestTransactionPriceToTick']:
-                if shares - (100 - shares_sold) == 0:
+                if shares - 10 == 0:
                     avg_price_holding_shares = 0
                 else:
-                    avg_price_holding_shares = (avg_price_holding_shares * shares - (100 - shares_sold) * row[
-                        'LatestTransactionPriceToTick']) / (shares - (100 - shares_sold))
+                    avg_price_holding_shares = (avg_price_holding_shares * shares - 10 * row[
+                        'LatestTransactionPriceToTick']) / (shares - 10)
 
-                shares -= (100 - shares_sold)
-                volume = 100 - shares_sold
-                shares_sold = 100
-                balance += (100 - shares_sold) * row['LatestTransactionPriceToTick']
+                balance += 10 * row['LatestTransactionPriceToTick']
+                shares -= 10
+                volume = 10
+                shares_sold += 10
                 BSflag = 'S'
             elif buy_sell_flag == None and row[
                 'TickTime'] > cut_off_timeb and shares_bought == 100 and shares_sold < 100:
-                if shares - (100 - shares_sold) == 0:
+                if shares - 10 == 0:
                     avg_price_holding_shares = 0
                 else:
-                    avg_price_holding_shares = (avg_price_holding_shares * shares - (100 - shares_sold) * row[
-                        'LatestTransactionPriceToTick']) / (shares - (100 - shares_sold))
+                    avg_price_holding_shares = (avg_price_holding_shares * shares - 10 * row[
+                        'LatestTransactionPriceToTick']) / (shares - 10)
 
-                shares -= (100 - shares_sold)
-                volume = 100 - shares_sold
-                shares_sold = 100
-                balance += (100 - shares_sold) * row['LatestTransactionPriceToTick']
+                balance += 10 * row['LatestTransactionPriceToTick']
+                shares -= 10
+                volume = 10
+                shares_sold += 10
                 BSflag = 'S'
 
 
