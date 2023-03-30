@@ -145,7 +145,6 @@ class TransactionVolume(BaseEstimator, TransformerMixin):
                                   .shift(1).fillna(0)
 
         x['TransactionVolume'] = x['CumulativeTransactionVolumeToTick'] - x['TransactionVolume']
-        x = x.reset_index(level='StockCode')
 
         return x
 
