@@ -103,13 +103,13 @@ all_files = \
 
 train_files = \
     ['tickdata_20221230.csv',
-     'tickdata_20221229.csv',
-     'tickdata_20221228.csv',
-     'tickdata_20221227.csv',
-     'tickdata_20221226.csv',
-     'tickdata_20221223.csv',
-     'tickdata_20221222.csv',
-     'tickdata_20221221.csv',]
+     'tickdata_20221229.csv']
+     # 'tickdata_20221228.csv',
+     # 'tickdata_20221227.csv',
+     # 'tickdata_20221226.csv',
+     # 'tickdata_20221223.csv',
+     # 'tickdata_20221222.csv',
+     # 'tickdata_20221221.csv',
      # 'tickdata_20221220.csv',
      # 'tickdata_20221219.csv',
      # 'tickdata_20221216.csv',

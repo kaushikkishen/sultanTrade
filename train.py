@@ -26,15 +26,15 @@ def main():
                         help='mnist model path')
 
     args = parser.parse_args()
-
+    print('Transforming Data....')
     for file in train_files:
-
+        print('Loading File {}'.format(file))
         file_path = os.path.join(args.data_url, file)
         this_data = pd.read_csv(file_path)
         this_data = changeToName(this_data)
         this_data = transformation_pipeline.fit_transform(this_data)
         this_data.to_csv(os.path.join(args.train_url, 'transformed', file))
-
+        print('Saving File {}'.format(file))
         if train_files.index(file) == 0:
             all_data = this_data
         else:
@@ -49,9 +49,6 @@ def main():
         ])
 
     model.fit(X, y)
-
-    with open(os.path.join(args.train_url, 'TransformationPipeline.pkl'), 'wb') as f:
-        pickle.dump(transformation_pipeline, f)
 
     with open(os.path.join(args.train_url, 'RandomForestModelRun1.pkl'), 'wb') as f:
         pickle.dump(model, f)

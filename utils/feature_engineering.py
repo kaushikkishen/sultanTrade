@@ -224,6 +224,6 @@ class NDayRegression(BaseEstimator, TransformerMixin):
         x = x.sort_values(['TickTime']) \
             .groupby('StockCode') \
             .apply(lambda l: self.RollingOLSRegression(l))
-        x = x.reset_index(level='StockCode')
+        x = x.reset_index(drop=True)
 
         return x
