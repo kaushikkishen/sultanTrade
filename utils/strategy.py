@@ -8,8 +8,8 @@ class Strategy(BaseEstimator, TransformerMixin):
 
     def __init__(self, shares_bought=0, shares_sold=0, balance=0, avg_price_holding_shares=0, shares=0,
                  rolling_mean_100_thres=50,
-                 rolling_mean_5_thres=0.0012, stop_loss_limit=0.97, profit_limit=1.005, cut_off_time=143000000,
-                 cut_off_timeb=145000000):
+                 rolling_mean_5_thres=0.0012, stop_loss_limit=0.97, profit_limit=1.005, cut_off_time=141500000,
+                 cut_off_timeb=143500000, time_record=0):
 
         self.shares_bought = shares_bought
         self.shares_sold = shares_sold
@@ -22,9 +22,15 @@ class Strategy(BaseEstimator, TransformerMixin):
         self.profit_limit = profit_limit  # 0.5% profit limit
         self.cut_off_time = cut_off_time  # cut-off time to dump stocks if have not finished transactions
         self.cut_off_timeb = cut_off_timeb
+        self.time_record = time_record
 
     def fit(self, x, y=None):
         return self
+
+    def tm_to_ms(tm):
+        hhmmss = tm // 1000
+        ms = (hhmmss // 10000 * 3600 + (hhmmss // 100 % 100) * 60 + hhmmss % 100) * 1000 + tm % 1000
+        return ms
 
     def strategy(self, x):
 
@@ -39,6 +45,7 @@ class Strategy(BaseEstimator, TransformerMixin):
         profit_limit = self.profit_limit  # 0.5% profit limit
         cut_off_time = self.cut_off_time  # cut-off time to dump stocks if have not finished transactions
         cut_off_timeb = self.cut_off_timeb
+        time_record = self.time_record
 
         output = pd.DataFrame(columns=['TickTime', 'symbol', 'BSflag', 'dataIdx', 'volume'])
 
@@ -56,36 +63,31 @@ class Strategy(BaseEstimator, TransformerMixin):
             if buy_sell_flag == None and shares_bought < 100 and row[
                 'RollingTransPriceMeanDiff5'] > rolling_mean_5_thres * row['LatestTransactionPriceToTick'] and row[
                 'RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
+                if shares_bought == 0:
+                    time_record = row['TickTime']
+                    balance -= 10 * row['LatestTransactionPriceToTick']
+                    avg_price_holding_shares = row['LatestTransactionPriceToTick']
+                    shares_bought += 10
+                    shares += 10
+                    buy_sell_flag = 'B'
+                    BSflag = 'B'
+                    volume = 10
 
-                balance -= 10 * row['LatestTransactionPriceToTick']
-                avg_price_holding_shares = row['LatestTransactionPriceToTick']
-                shares_bought += 10
-                shares += 10
-                buy_sell_flag = 'B'
-                BSflag = 'B'
-                volume = 10
+                elif self.tm_to_ms(row['TickTime']) - self.tm_to_ms(time_record) > 60000:
 
-            # elif buy_sell_flag == None and shares_bought <= 40 and row['RollingTransPriceMeanDiff5'] > rolling_mean_5_thres and row['RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
-            #     balance -= 30 * row['LatestTransactionPriceToTick']
-            #     avg_price_holding_shares = (avg_price_holding_shares * shares + 30 * row['LatestTransactionPriceToTick']) / (shares + 30)
-            #     shares_bought += 30
-            #     shares += 30
-            #     buy_sell_flag = 'B'
-            #     BSflag= 'B'
-            #     volume = 30
-
-            # elif buy_sell_flag == None and shares_bought <= 70 and row['RollingTransPriceMeanDiff5'] > rolling_mean_5_thres and row['RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
-            #     balance -= 30 * row['LatestTransactionPriceToTick']
-            #     avg_price_holding_shares = (avg_price_holding_shares * shares + 30 * row['LatestTransactionPriceToTick']) / (shares + 30)
-            #     shares_bought += 30
-            #     shares += 30
-            #     buy_sell_flag = 'B'
-            #     BSflag= 'B'
-            #     volume = 30
+                    balance -= 10 * row['LatestTransactionPriceToTick']
+                    avg_price_holding_shares = row['LatestTransactionPriceToTick']
+                    shares_bought += 10
+                    shares += 10
+                    buy_sell_flag = 'B'
+                    time_record = row['TickTime']
+                    BSflag = 'B'
+                    volume = 10
 
             elif buy_sell_flag == None and shares_sold < 100 and shares_bought > 0 and shares_bought > shares_sold and (
                     row['LatestTransactionPriceToTick'] >= profit_limit * avg_price_holding_shares or row[
-                'LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares):
+                'LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares) and self.tm_to_ms(
+                    row['TickTime']) - self.tm_to_ms(time_record) > 60000:
                 if shares - 10 == 0:
                     avg_price_holding_shares = 0
                 else:
@@ -98,32 +100,9 @@ class Strategy(BaseEstimator, TransformerMixin):
                 BSflag = 'S'
                 volume = 10
 
-            # elif buy_sell_flag == None and shares_sold <= 40 and shares_bought >= 70 and (row['LatestTransactionPriceToTick'] >= profit_limit * avg_price_holding_shares or row['LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares):
-            #     if shares - 30 == 0:
-            #         avg_price_holding_shares = 0
-            #     else:
-            #         avg_price_holding_shares = (avg_price_holding_shares * shares - 30 * row['LatestTransactionPriceToTick']) / (shares - 30)
-            #     shares_sold += 30
-            #     shares -= 30
-            #     balance += 30 * row['LatestTransactionPriceToTick']
-            #     buy_sell_flag = 'S'
-            #     BSflag= 'S'
-            #     volume = 30
-
-            # elif buy_sell_flag == None and shares_sold <= 70 and shares_bought == 100 and (row['LatestTransactionPriceToTick'] >= profit_limit * avg_price_holding_shares or row['LatestTransactionPriceToTick'] <= stop_loss_limit * avg_price_holding_shares):
-            #     if shares - 30 == 0:
-            #         avg_price_holding_shares = 0
-            #     else:
-            #         avg_price_holding_shares = (avg_price_holding_shares * shares - 30 * row['LatestTransactionPriceToTick']) / (shares - 30)
-            #     shares_sold += 30
-            #     shares -= 30
-            #     balance += 30 * row['LatestTransactionPriceToTick']
-            #     buy_sell_flag = 'S'
-            #     BSflag= 'S'
-            #     volume = 30
-
             # for dumping stocks to meet transaction rules after a certain cut-off time
-            elif buy_sell_flag == None and row['TickTime'] > cut_off_time and shares_bought < 100:
+            elif buy_sell_flag == None and row['TickTime'] > cut_off_time and shares_bought < 100 and self.tm_to_ms(
+                    row['TickTime']) - self.tm_to_ms(time_record) > 60000:
                 balance -= 10 * row['LatestTransactionPriceToTick']
                 avg_price_holding_shares = (avg_price_holding_shares * shares + 10 * row[
                     'LatestTransactionPriceToTick']) / (shares + 10)
@@ -132,11 +111,13 @@ class Strategy(BaseEstimator, TransformerMixin):
                 shares_bought += 10
                 buy_sell_flag = 'B'
                 BSflag = 'B'
+                time_record = row['TickTime']
 
                 # for dumping stocks to meet transaction rules after a certain cut-off time
             elif buy_sell_flag == None and row[
                 'TickTime'] > cut_off_time and shares_bought == 100 and shares_sold < 100 and avg_price_holding_shares < \
-                    row['LatestTransactionPriceToTick']:
+                    row['LatestTransactionPriceToTick'] and self.tm_to_ms(row['TickTime']) - self.tm_to_ms(
+                    time_record) > 60000:
                 if shares - 10 == 0:
                     avg_price_holding_shares = 0
                 else:
@@ -148,8 +129,10 @@ class Strategy(BaseEstimator, TransformerMixin):
                 volume = 10
                 shares_sold += 10
                 BSflag = 'S'
+                time_record = row['TickTime']
             elif buy_sell_flag == None and row[
-                'TickTime'] > cut_off_timeb and shares_bought == 100 and shares_sold < 100:
+                'TickTime'] > cut_off_timeb and shares_bought == 100 and shares_sold < 100 and self.tm_to_ms(
+                    row['TickTime']) - self.tm_to_ms(time_record) > 60000:
                 if shares - 10 == 0:
                     avg_price_holding_shares = 0
                 else:
@@ -161,6 +144,7 @@ class Strategy(BaseEstimator, TransformerMixin):
                 volume = 10
                 shares_sold += 10
                 BSflag = 'S'
+                time_record = row['TickTime']
 
 
             else:
