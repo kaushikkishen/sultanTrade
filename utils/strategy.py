@@ -27,7 +27,7 @@ class Strategy(BaseEstimator, TransformerMixin):
     def fit(self, x, y=None):
         return self
 
-    def tm_to_ms(tm):
+    def tm_to_ms(self,tm):
         hhmmss = tm // 1000
         ms = (hhmmss // 10000 * 3600 + (hhmmss // 100 % 100) * 60 + hhmmss % 100) * 1000 + tm % 1000
         return ms
@@ -60,7 +60,7 @@ class Strategy(BaseEstimator, TransformerMixin):
             buy_sell_flag = None
             # 'Index','StockCode','TickTime','LatestTransactionPriceToTick', 'RollingTransPriceMeanDiff5', 'RollingTransPriceMeanDiff100','Label'
             # Check if we can buy 40, 30, 30 shares
-            if buy_sell_flag == None and shares_bought < 100 and row['RollingTransPriceMeanDiff5'] > rolling_mean_5_thres * row['LatestTransactionPriceToTick'] and row['RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
+            if buy_sell_flag == None and shares_bought < 100 and row['RollingTransPriceMeanDiff5'] > rolling_mean_5_thres * row['LatestTransactionPriceToTick'] and row['RollingTransPriceMeanDiff100'] > rolling_mean_100_thres:
                 if shares_bought == 0:
                     time_record = row['TickTime']
                     balance -= 10 * row['LatestTransactionPriceToTick']
@@ -94,6 +94,7 @@ class Strategy(BaseEstimator, TransformerMixin):
                 buy_sell_flag = 'S'
                 BSflag = 'S'
                 volume = 10
+                time_record = row['TickTime']
 
             # for dumping stocks to meet transaction rules after a certain cut-off time
             elif buy_sell_flag == None and row['TickTime'] > cut_off_time and shares_bought < 100 and self.tm_to_ms(row['TickTime']) - self.tm_to_ms(time_record) > 60000:
