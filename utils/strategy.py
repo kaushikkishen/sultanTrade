@@ -60,7 +60,7 @@ class Strategy(BaseEstimator, TransformerMixin):
             buy_sell_flag = None
             # 'Index','StockCode','TickTime','LatestTransactionPriceToTick', 'RollingTransPriceMeanDiff5', 'RollingTransPriceMeanDiff100','Label'
             # Check if we can buy 40, 30, 30 shares
-            if buy_sell_flag == None and shares_bought < 100 and row['RollingTransPriceMeanDiff5'] > rolling_mean_5_thres * row['LatestTransactionPriceToTick'] and row['RollingTransPriceMeanDiff100'] > rolling_mean_100_thres:
+            if buy_sell_flag == None and shares_bought < 100 and row['RollingTransPriceMeanDiff5'] > rolling_mean_5_thres * row['LatestTransactionPriceToTick'] and row['RollingTransPriceMeanDiff100'] > rolling_mean_100_thres and row['Label'] == 1:
                 if shares_bought == 0:
                     time_record = row['TickTime']
                     balance -= 10 * row['LatestTransactionPriceToTick']
