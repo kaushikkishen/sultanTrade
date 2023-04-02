@@ -32,7 +32,8 @@ def main():
         file_path = os.path.join(args.data_url, file)
         this_data = pd.read_csv(file_path)
         this_data = changeToName(this_data)
-        this_data = transformation_pipeline.fit_transform(this_data)
+        this_data = transformation_pipeline.fit_transform(this_data) \
+                                           .drop(['Label, Index'], axis=1)
         this_data.to_csv(os.path.join(args.train_url, 'transformed', file))
         print('Saving File {}'.format(file))
         if train_files.index(file) == 0:
