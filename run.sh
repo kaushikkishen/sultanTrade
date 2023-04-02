@@ -6,4 +6,3 @@ if [[ -n "$1" && -n "$2" ]]; then
 else
     echo "Insufficient input parameters!"
 fi
-``
